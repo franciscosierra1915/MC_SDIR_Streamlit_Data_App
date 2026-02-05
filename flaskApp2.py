@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -9,8 +9,6 @@ DATA = [
 ]
 
 next_id = 4
-
-
 @app.route("/")
 def index():
     return """
@@ -26,8 +24,41 @@ def index():
         <li>
         <a href="/api/items/1">api/items/1</a>
         </li>
+        <li>
+        <a href="/hello">hello</a>
+        </li>
+        <li>
+        <a href="/data">data</a>
+        </li>
     </ul>
     """
+
+# REQUIRED ENDPOINT #1
+@app.route("/hello", methods=["GET"])
+def hello():
+    return jsonify({
+        "message": "Hello! Welcome to my Flask Micro-API."
+    }), 200
+
+# REQUIRED ENDPOINT #2 (GET + POST)
+@app.route("/data", methods=["GET", "POST"])
+def data():
+    global next_id
+
+    if request.method == "GET":
+        return jsonify(DATA), 200
+
+    if request.method == "POST":
+        new_item = request.get_json()
+
+        new_item["id"] = next_id
+        next_id += 1
+        DATA.append(new_item)
+
+        return jsonify({
+            "message": "Item added successfully",
+            "item": new_item
+        }), 201
 
 @app.route("/api/health")
 def health():
